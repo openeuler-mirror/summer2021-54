@@ -1,37 +1,50 @@
 # Summer2021-No.54 开发Linux内核结构体关联关系分析工具
 
-#### 介绍
+### 介绍
 https://gitee.com/openeuler-competition/summer-2021/issues/I3EIK7
 
-#### 软件架构
-软件架构说明
+### 软件架构
+#### 关联关系提取
+该部分主要完成 C 代码的基本分析工作，基于 LLVM 完成，将 C 代码库经编译、IR 转换、关联分析后，转化为包含全部结构体的 DOT 格式关联关系图。
 
+#### 可视化
+目前使用 Graphviz 提供的 sfdp 工具进行简单的静态图片绘制，未来将开发动态绘制工具。
 
-#### 安装教程
+### 依赖安装
+```shell
+(Arch Linux)
+# pacman -S base-devel python python-pip clang graphviz
+$ pip3 install wllvm networkx
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+(Debian)
+# apt install build-essential clang python3 python3-pip graphviz
+$ pip3 install wllvm networkx
+```
+### 使用说明
 
-#### 使用说明
+1. 使用 [wllvm](https://github.com/travitch/whole-program-llvm) 编译内核
+```shell
+$ cd linux-openeuler-4.19/
+$ export LLVM_COMPILER=clang    # 指定 LLVM 编译器
+$ make CC=wllvm defconfig       # 可以进行更多配置
+$ make CC=wllvm -j$(nproc)      # 使用 wllvm 编译内核
+```
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+2. 编译后，内核各驱动、模块的 .o 文件中，均已包含了 LLVM Bitcode。以 `net/ipv4/tcp_ipv4.o` 为例，使用以下命令提取 LLVM IR：
+```shell
+$ extract-bc net/ipv4/tcp_ipv4.o    # 获得 tcp_ipv4.o.bc
+$ llvm-dis net/ipv4/tcp_ipv4.o.bc   # 将 Bitcode 反汇编为 IR
+$ ls net/ipv4/tcp_ipv4.o*
+net/ipv4/tcp_ipv4.o  net/ipv4/tcp_ipv4.o.bc  net/ipv4/tcp_ipv4.o.ll
+```
 
-#### 参与贡献
+3. 使用本项目提供的 Python 脚本，解析 IR 并获得 DOT
+```shell
+$ python3 ir_parser/main.py net/ipv4/tcp_ipv4.o.ll tcp_ipv4.dot
+Dependency graph has 626 nodes and 1664 edges
+```
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
-
-
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+4. 使用 sfdp 获取关系图
+```shell
+$ sfdp -x -Goverlap=prism -Tpng tcp_ipv4.dot > tcp_ipv4.png
+```
