@@ -1,15 +1,33 @@
 #!/usr/bin/env python3
-import sys
+import os
+import argparse
+import json
 import re
 import networkx as nx
-from networkx.drawing.nx_pydot import write_dot
+from networkx.classes.digraph import DiGraph
+from networkx.readwrite import json_graph
 
-if(len(sys.argv) < 3):
-    print(f"usage: {sys.argv[0]} ir_file dot_file")
-    exit(255)
+parser = argparse.ArgumentParser(
+    description='LLVM IR struct dependency parser')
 
-ir_file = sys.argv[1]
-dot_file = sys.argv[2]
+parser.add_argument('ir_file', type=str, help='input IR file')
+parser.add_argument('--json_dir', type=str,
+                    help='JSON output directory', default='./out')
+args = parser.parse_args()
+
+
+# write a DiGraph to json adjacency list
+def write_json(G: DiGraph, file: str):
+    # {"nodes": ["id": name], "adjacency": [["id": name], []]}
+    data = json_graph.adjacency_data(G)
+
+    # {name: [name, ...]}
+    json_data = dict(zip([x['id'] for x in data['nodes']], [
+                     [x['id'] for x in lst] for lst in data['adjacency']]))
+
+    with open(file, 'w') as f:
+        json.dump(json_data, f)
+
 
 regex_typename = re.compile(r'%[A-Za-z0-9._]+')
 regex_anon = re.compile(r'(struct|union).anon(.\d+)?')
@@ -19,7 +37,7 @@ regex_whitesp = re.compile(r'\s+')
 G = nx.DiGraph()
 
 typedef = {}
-with open(ir_file, 'r') as ir:
+with open(args.ir_file, 'r') as ir:
     for line in ir:
         m = regex_typedef.match(line)
         if m:
@@ -44,5 +62,11 @@ for name, defi in typedef.items():
         G.add_node(child)
         G.add_edge(name, child)
 
-print(f"Dependency graph has {G.number_of_nodes()} nodes and {G.number_of_edges()} edges")
-write_dot(G, dot_file)
+print(
+    f"Dependency graph has {G.number_of_nodes()} nodes and {G.number_of_edges()} edges")
+
+if not os.path.exists(args.json_dir):
+    os.makedirs(args.json_dir)
+
+write_json(G, os.path.join(args.json_dir, 'forward.json'))
+write_json(G.reverse(), os.path.join(args.json_dir, 'backward.json'))
