@@ -8,15 +8,21 @@ var edges = new vis.DataSet(new Array())
 // create a network
 var container = document.getElementById("mynetwork");
 var data = { nodes: nodes, edges: edges };
-// var options = {};
 var options = {
     interaction: { hover: true },
-    layout: { hierarchical: { direction: 'UD', sortMethod: 'hubsize' } },
-    //上下级结构显示,当定义上下级时候需要自定义层级显示时，需要对所有节点进行level属性进行定义    
+    layout: { hierarchical: { direction: 'LR', sortMethod: 'directed', shakeTowards:'leaves', levelSeparation: 250} },
+    edges: {
+        smooth: true,
+        arrows: {to: true},
+    },
 };
 var network = new vis.Network(container, data, options);
 
 function formSubmit() {
+
+    nodes.clear()
+    edges.clear()
+
     var struct = document.getElementById("struct_input").value;
 
     nodes.add({ id: struct, label: struct, level: init_level, count: 0 })
@@ -99,25 +105,25 @@ function delNodes(clickedNode) {
 
 function highlightNode(clickedNode) {
     clickedNode.color = {
-        border: '#CD2626',
+        border: '#CD2626',//'#CD2626',
         background: '#FA8072',
-        highlight: { border: '#2B7CE9', background: '#D2E5FF' }
+        highlight: { border:'#CD2626', background:'#FBA69D' },
+        hover: { border:'#CD2626', background:'#FBA69D' }
     }
     nodes.update(clickedNode);
 }
 
 function unHighlightNode(clickedNode) {
     clickedNode.color = {
-        border: '#2263e3',
-        background: '#86b3fa',
-        highlight: { border: '#2263e3', background: '#c8defe' }
+        border: '#2B7CE9',
+        background: '#97C2FC',
+        highlight: {border:'#2B7CE9', background:'#D2E5FF'},
+        hover: {border:'#2B7CE9', background:'#D2E5FF'},
     }
     nodes.update(clickedNode);
 }
 
 
 // TODO：增加屏蔽
-
-// TODO 改节点颜色
 
 // TODO 右边增加一个边框显示结点具体信息
