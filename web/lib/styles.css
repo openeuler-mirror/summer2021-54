@@ -72,9 +72,21 @@ div.tooltip {
     justify-content: left;
 }
 
+/*  TODO 使div充满屏幕 */
 #mynetwork {
-    width: 1000px;
-    height: 900px;
+    position:absolute;
+    width: 79%;
+    top: 55px;
+    height: 600px;
+}
+
+#structdetail {
+    position:absolute;
+    top: 55px;
+    left: 80%;
+    width: 19%;
+    height: 600px;
+    display:inline;
     border: 1px solid lightgray;
 }
 

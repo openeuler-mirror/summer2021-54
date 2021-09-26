@@ -11,13 +11,27 @@
 
 <body>
   <form>
-    <div class="autocomplete" style="width:300px;">
+    <div class="autocomplete" style="width:300px;line-height:50px;">
       <input type="text" name="struct" id="struct_input" placeholder="查找结构体">
     </div>
     <input type="button" onclick="formSubmit()" value="提交">
   </form>
 
   <div id="mynetwork"></div>
+
+  <div id="structdetail">
+    <p style="text-align:center"><b>详细信息</b></p>
+    <p style="text-align:center" id="detail_struct"></p>
+         <table >
+            <tr>
+              <th>成员名称</th>
+              <th>成员类型</th>
+            </tr>
+            <tbody id="tbody">
+            </tbody>
+         </table>
+  </div>
+
   <script>
     function autocomplete(inp, arr) {
       /*the autocomplete function takes two arguments,
@@ -124,7 +138,7 @@
 
   <script>
     // fetch data
-    var forwardInfo = backwardInfo = {};
+    var forwardInfo = backwardInfo = detailInfo = {};
     fetch('data/forward.json')
       .then(resp => resp.json())
       .then(data => {
@@ -135,6 +149,10 @@
     fetch('data/backward.json')
       .then(resp => resp.json())
       .then(data => backwardInfo = data);
+    
+    fetch('data/detail.json')
+      .then(resp => resp.json())
+      .then(data => detailInfo = data);
   </script>
 
   <script src="app.js"></script>

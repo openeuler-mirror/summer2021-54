@@ -7,6 +7,7 @@ var edges = new vis.DataSet(new Array())
 
 // create a network
 var container = document.getElementById("mynetwork");
+
 var data = { nodes: nodes, edges: edges };
 var options = {
     interaction: { hover: true },
@@ -14,6 +15,10 @@ var options = {
     edges: {
         smooth: true,
         arrows: {to: true},
+    },
+    nodes: {
+        shape: "box",
+        margin: 5,
     },
 };
 var network = new vis.Network(container, data, options);
@@ -23,11 +28,14 @@ function formSubmit() {
     nodes.clear()
     edges.clear()
 
+    // 清空表格中之前的内容
+    var tbody = document.getElementById("tbody")
+    tbody.innerHTML = ''
+
     var struct = document.getElementById("struct_input").value;
 
     nodes.add({ id: struct, label: struct, level: init_level, count: 0 })
     nodes_state.set(struct, "expanded");
-    console.log(nodes.get(struct))
     addNodes(nodes.get(struct));
 
 
@@ -47,6 +55,33 @@ function formSubmit() {
         nodes_state.set(nodeID, "expanded")
         addNodes(clickedNode);
     });
+
+    network.on("click", function (params) { //单击事件
+        if (params.nodes.length === 0) { return; } //排除非节点单击事件
+
+        var curNode = params.nodes[0];
+        var detail_struct = document.getElementById("detail_struct")
+        detail_struct.innerHTML = curNode
+
+        // 清空表格中之前的内容
+        var tbody = document.getElementById("tbody")
+        tbody.innerHTML = ''
+
+        if(detailInfo[curNode]==undefined){return}
+
+        // 添加新的信息
+        Object.keys(detailInfo[curNode]).forEach(function (member) {
+            var tr = document.createElement("tr");
+            var td = document.createElement("td")
+            td.innerHTML = member
+            tr.appendChild(td);
+            var td = document.createElement("td")
+            td.innerHTML = detailInfo[curNode][member]
+            tr.appendChild(td);
+            tbody.appendChild(tr);
+        })          
+    })
+    
 }
 
 
@@ -105,7 +140,7 @@ function delNodes(clickedNode) {
 
 function highlightNode(clickedNode) {
     clickedNode.color = {
-        border: '#CD2626',//'#CD2626',
+        border: '#CD2626',
         background: '#FA8072',
         highlight: { border:'#CD2626', background:'#FBA69D' },
         hover: { border:'#CD2626', background:'#FBA69D' }
@@ -122,8 +157,3 @@ function unHighlightNode(clickedNode) {
     }
     nodes.update(clickedNode);
 }
-
-
-// TODO：增加屏蔽
-
-// TODO 右边增加一个边框显示结点具体信息
