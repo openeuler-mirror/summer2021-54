@@ -28,16 +28,19 @@ Map_AnonTypes = {
 def die_type_rec(die: DIE, prev: Optional[DIE]):
     t = die.attributes.get("DW_AT_type")
     if t is None:
+        prefix = '*' if prev.tag == 'DW_TAG_pointer_type' else ''
+
         # got a type
         if die.attributes.get("DW_AT_name"):
             # common named type with prefix
-            return Map_TypePrefix.get(die.tag, f'unknown: {die.tag}') + die.attributes.get("DW_AT_name").value.decode()
+            return prefix + Map_TypePrefix.get(die.tag, f'unknown: {die.tag}') \
+                + die.attributes.get("DW_AT_name").value.decode()
         elif die.tag == 'DW_TAG_structure_type' and prev.tag == 'DW_TAG_typedef':
             # typedef-ed anonymous struct
-            return 'struct.' + prev.attributes.get("DW_AT_name").value.decode()
+            return prefix + 'struct.' + prev.attributes.get("DW_AT_name").value.decode()
         else:
             # no name types
-            return Map_AnonTypes.get(die.tag, f'unknown: {die.tag}')
+            return prefix + Map_AnonTypes.get(die.tag, f'unknown: {die.tag}')
     elif t.form == 'DW_FORM_ref4':
         ref = t.value
         return die_type_rec(dwarfinfo.get_DIE_from_refaddr(ref), die)
@@ -50,7 +53,12 @@ def die_info_rec(die: DIE, name=''):
         member_type = die_type_rec(die, None)
 
         # save to return data
-        struct_data[name][member_name] = member_type
+        if member_type.startswith('*'):
+            # pointer member, change to *name -> type
+            struct_data[name][member_name+'*'] = member_type[1:]
+        else:
+            struct_data[name][member_name] = member_type
+        
         if args.debug:
             print(f'  > member {member_name}, type: {member_type}')
 
