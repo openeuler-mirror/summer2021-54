@@ -22,14 +22,14 @@
   <div id="structdetail">
     <p style="text-align:center"><b>详细信息</b></p>
     <p style="text-align:center" id="detail_struct"></p>
-         <table >
-            <tr>
-              <th>成员名称</th>
-              <th>成员类型</th>
-            </tr>
-            <tbody id="tbody">
-            </tbody>
-         </table>
+    <table>
+      <tr>
+        <th>成员类型</th>
+        <th>成员名称</th>
+      </tr>
+      <tbody id="tbody">
+      </tbody>
+    </table>
   </div>
 
   <script>
@@ -149,7 +149,7 @@
     fetch('data/backward.json')
       .then(resp => resp.json())
       .then(data => backwardInfo = data);
-    
+
     fetch('data/detail.json')
       .then(resp => resp.json())
       .then(data => detailInfo = data);

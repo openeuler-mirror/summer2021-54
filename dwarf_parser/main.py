@@ -55,7 +55,7 @@ def die_info_rec(die: DIE, name=''):
         # save to return data
         if member_type.startswith('*'):
             # pointer member, change to *name -> type
-            struct_data[name][member_name+'*'] = member_type[1:]
+            struct_data[name]['*'+member_name] = member_type[1:]
         else:
             struct_data[name][member_name] = member_type
         

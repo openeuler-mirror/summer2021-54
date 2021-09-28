@@ -106,7 +106,7 @@ function getPort(struct, node) {
         Object.keys(detailInfo[struct]).forEach(function (member, index) {
             if (detailInfo[struct][member] == node) {
                 port = index
-                is_pointer = (member.charAt(member.length - 1) == '*')
+                is_pointer = (member.charAt(0) == '*')
                 throw new Error()
             }
         })
